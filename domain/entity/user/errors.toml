@@ -1,0 +1,3 @@
+[not_found]
+"user.notFound" = "User not found"
+"user.invalidAge" = "Age must be greater than {{.MaxAge}}"

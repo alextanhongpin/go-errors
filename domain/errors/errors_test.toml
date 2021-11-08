@@ -1,0 +1,3 @@
+[not_found]
+"user.notFound" = "User not found"
+"user.idNotFound" = "User ID {{.ID}} not found"
