@@ -2,6 +2,10 @@
 
 Representing errors in Go as data structures.
 
+## TODO
+
+View presentation [here](https://go-talks.appspot.com/github.com/alextanhongpin/go-errors/main.slide#1)
+
 
 ## Motivation
 

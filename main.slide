@@ -1,0 +1,19 @@
+# Golang Errors
+Designing application errors
+9 Nov 2021
+Tags: golang, errors
+Summary: error handling in golang
+
+
+Alex Tan Hong Pin
+Engineer
+alextan220990@gmail.com
+https://alextanhongpin.github.io/
+
+
+
+## Application errors
+
+.play main.go
+
+## Categorizing errors
