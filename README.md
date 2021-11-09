@@ -4,7 +4,7 @@ Representing errors in Go as data structures.
 
 ## TODO
 
-View presentation [here](https://go-talks.appspot.com/github.com/alextanhongpin/go-errors/main.slide#1)
+View presentation [here](https://alextanhongpin.github.io/go-errors/#1)
 
 
 ## Motivation
