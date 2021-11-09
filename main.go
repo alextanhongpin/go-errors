@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	stderrors "errors"
 	"fmt"
 
 	"github.com/alextanhongpin/go-errors/domain/entity/user"
@@ -20,4 +22,17 @@ func main() {
 	err = user.ErrNotFound
 	fmt.Println(err)
 	fmt.Println(errors.Is(err, user.ErrNotFound))
+
+	err = fmt.Errorf("failed to find user: %w", err)
+	fmt.Println(err)
+
+	var userNotFoundErr *errors.Error
+	if stderrors.As(err, &userNotFoundErr) {
+		fmt.Println(userNotFoundErr)
+	}
+	b, err := json.Marshal(userNotFoundErr)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(b))
 }

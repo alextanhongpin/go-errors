@@ -16,6 +16,7 @@ const (
 	FailedPrecondition             // failed_precondition
 	Unauthorized                   // unauthorized
 	Forbidden                      // forbidden
+
 	kindEnd
 )
 

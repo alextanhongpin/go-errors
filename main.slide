@@ -17,3 +17,21 @@ https://alextanhongpin.github.io/
 .play main.go
 
 ## Categorizing errors
+
+- `Kind` describes the breakdown of errors
+
+.code domain/errors/kind.go /^type Kind/,/\)/
+
+## Error Codes
+
+
+Use `errors.toml` to describe errors:
+
+.code domain/entity/user/errors.toml
+
+## Registering Errors
+
+- `errors.C` loads errors by error code
+- `errors.P` loads partial errors by error code
+
+.code domain/entity/user/user.go /\/\/go\:/,/^\)/
