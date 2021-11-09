@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<!-- saved from url=(0034)http://127.0.0.1:3999/main.slide#1 -->
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Golang Errors</title>
+
+    <script>
+      var notesEnabled = false;
+    </script>
+    <script src="./index/slides.js"></script>
+    <meta
+      name="viewport"
+      content="width=device-width,height=device-height,initial-scale=1"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+  </head>
+
+  <body
+    style="display: none"
+    class="loaded"
+    data-new-gr-c-s-check-loaded="14.1038.0"
+    data-gr-ext-installed=""
+  >
+    <section
+      class="slides layout-widescreen"
+      style="transform: scale(0.845333)"
+    >
+      <article class="current">
+        <h1>Golang Errors</h1>
+        <h3>Designing application errors</h3>
+        <h3>9 November 2021</h3>
+
+        <div class="presenter">
+          <p>Alex Tan Hong Pin</p>
+
+          <p>Engineer</p>
+        </div>
+
+        <div class="presenter">
+          <p></p>
+        </div>
+      </article>
+
+      <article class="next">
+        <h3>Application errors</h3>
+        <p>End-users perspective:</p>
+        <ul>
+          <li>Email is invalid</li>
+          <li>
+            You do not have permission to approve this. Please send an email to
+            admin@yourcompany.com to request approval.
+          </li>
+          <li>Please attach your resume before submitting.</li>
+        </ul>
+        <p>Monitoring agent perspective:</p>
+        <ul>
+          <li><code>{"error": "Email is invalid"}</code></li>
+        </ul>
+
+        <span class="pagenumber">2</span>
+      </article>
+
+      <article class="far-next">
+        <h3>Error representation</h3>
+        <p>The minimal field required for generic errors:</p>
+
+        <div class="code">
+          <pre><span num="24">type Error struct {</span>
+<span num="25">    Kind    Kind   `json:"kind"`</span>
+<span num="26">    Code    Code   `json:"code"`</span>
+<span num="27">    Message string `json:"message"`</span>
+<span num="28">    Params  M      `json:"params,omitempty"`</span>
+<span num="29">}</span>
+</pre>
+        </div>
+
+        <span class="pagenumber">3</span>
+      </article>
+
+      <article class="">
+        <h3>Error Kinds</h3>
+        <ul>
+          <li><code>Kind</code> describes the breakdown of errors</li>
+        </ul>
+
+        <div class="code">
+          <pre><span num="6">type Kind uint</span>
+<span num="7"></span>
+<span num="8">//go:generate stringer -type=Kind -linecomment</span>
+<span num="9">// List of error kinds.</span>
+<span num="10">const (</span>
+<span num="11">    Unknown            Kind = iota // unknown</span>
+<span num="12">    Internal                       // internal</span>
+<span num="13">    BadInput                       // bad_input</span>
+<span num="14">    NotFound                       // not_found</span>
+<span num="15">    AlreadyExists                  // already_exists</span>
+<span num="16">    FailedPrecondition             // failed_precondition</span>
+<span num="17">    Unauthorized                   // unauthorized</span>
+<span num="18">    Forbidden                      // forbidden</span>
+<span num="19"></span>
+<span num="20">    kindEnd</span>
+<span num="21">)</span>
+</pre>
+        </div>
+
+        <span class="pagenumber">4</span>
+      </article>
+
+      <article class="">
+        <h3>Error Codes</h3>
+        <ul>
+          <li>Unique identifier for each error type</li>
+          <li>Example of error codes as <code>errors.toml</code>:</li>
+        </ul>
+
+        <div class="code">
+          <pre><span num="1">[not_found]</span>
+<span num="2">"user.notFound" = "User not found"</span>
+<span num="3"></span>
+<span num="4">[bad_input]</span>
+<span num="5">"user.invalidAge" = "Age must be greater than {{.MaxAge}}"</span>
+</pre>
+        </div>
+
+        <span class="pagenumber">5</span>
+      </article>
+
+      <article class="">
+        <h3>Registering Errors</h3>
+        <ul>
+          <li><code>errors.C</code> loads errors by error code</li>
+          <li><code>errors.P</code> loads partial errors by error code</li>
+        </ul>
+
+        <div class="code">
+          <pre><span num="9">//go:embed errors.toml</span>
+<span num="10">var errorCodes []byte</span>
+<span num="11"></span>
+<span num="12">// User errors.</span>
+<span num="13">var (</span>
+<span num="14">    // Register error codes before using them.</span>
+<span num="15">    _ = errors.Register(errorCodes)</span>
+<span num="16"></span>
+<span num="17">    // Sentinel error from a given error code.</span>
+<span num="18">    ErrNotFound = errors.C("user.notFound")</span>
+<span num="19"></span>
+<span num="20">    // A partial error from a given error code. Partial must be called with</span>
+<span num="21">    // Build, in order to ensure the params are passed in for constructing the</span>
+<span num="22">    // error message.</span>
+<span num="23">    ErrInvalidAge = errors.P("user.invalidAge")</span>
+</pre>
+        </div>
+
+        <span class="pagenumber">6</span>
+      </article>
+
+      <article class="">
+        <h3>Sentinel Error, Partial errors</h3>
+        <p>WIP</p>
+
+        <span class="pagenumber">7</span>
+      </article>
+
+      <article>
+        <h3>Errors across layers</h3>
+        <ul>
+          <li>Database errors</li>
+          <li>API errors</li>
+          <li>conversion to and from</li>
+        </ul>
+
+        <span class="pagenumber">8</span>
+      </article>
+
+      <article>
+        <h3>Public and private errors</h3>
+        <ul>
+          <li>
+            Some errors should be visible to end users (aka validation error),
+            while others not only through monitoring agent (database error,
+            network error)
+          </li>
+          <li>How to separate them?</li>
+        </ul>
+
+        <span class="pagenumber">9</span>
+      </article>
+
+      <article>
+        <h3>Fail fast or validate as whole</h3>
+        <ul>
+          <li>
+            Complex forms on the Frontend requires detail errors for each fields
+          </li>
+          <li>
+            Monitoring agent requires sufficient information for when errors
+            happens
+          </li>
+          <li>
+            Fail fast: return on first error, validate as whole: return
+            aggregated errors
+          </li>
+        </ul>
+
+        <span class="pagenumber">10</span>
+      </article>
+
+      <article>
+        <h3>Designing errors</h3>
+        <ul>
+          <li>Frontend Client: REST (Problem detail?) and GraphQL</li>
+          <li>Monitoring agent: serializable JSON errors</li>
+        </ul>
+
+        <span class="pagenumber">11</span>
+      </article>
+
+      <article>
+        <h3>Action, location and reason</h3>
+        <ul>
+          <li>Action: failed to create user</li>
+          <li>Location: email</li>
+          <li>Reason: email is invalid</li>
+        </ul>
+
+        <span class="pagenumber">12</span>
+      </article>
+
+      <article>
+        <h3>Actionables from errors</h3>
+        <ul>
+          <li>fix the issue</li>
+          <li>add more context to vague errors</li>
+          <li>alert on threshold exceeded</li>
+        </ul>
+
+        <span class="pagenumber">13</span>
+      </article>
+
+      <article>
+        <h3>Tracing errors</h3>
+        <ul>
+          <li>correlation ids</li>
+          <li>opentracing</li>
+        </ul>
+
+        <span class="pagenumber">14</span>
+      </article>
+
+      <article>
+        <h3>The language of errors</h3>
+        <ul>
+          <li>Important to standardize</li>
+          <li>Technical vs laymen</li>
+          <li>Noun based: Account creation failed when validating email</li>
+          <li>Verb based: Failed to create account/Create account failed</li>
+          <li>
+            use pattern:
+            <operation>
+              failed at
+              <location>
+                because
+                <reason
+                  >, Create account failed at email validation because email
+                  exists.</reason
+                ></location
+              ></operation
+            >
+          </li>
+        </ul>
+
+        <span class="pagenumber">15</span>
+      </article>
+
+      <article>
+        <h3>Bulk errors</h3>
+        <p>For bulk operations, like uploading CSV with thousands of rows</p>
+        <ul>
+          <li>fail fast?</li>
+          <li>summary of errors: n rows failed because of ...</li>
+        </ul>
+
+        <span class="pagenumber">16</span>
+      </article>
+
+      <article>
+        <h3>Thank you</h3>
+
+        <div class="presenter">
+          <p>Alex Tan Hong Pin</p>
+
+          <p>Engineer</p>
+
+          <p class="link">
+            <a href="mailto:alextan220990@gmail.com" target="_blank"
+              >alextan220990@gmail.com</a
+            >
+          </p>
+          <p class="link">
+            <a href="https://alextanhongpin.github.io/" target="_blank"
+              >https://alextanhongpin.github.io/</a
+            >
+          </p>
+        </div>
+
+        <div class="presenter">
+          <p></p>
+        </div>
+      </article>
+
+      <div class="slide-area" id="prev-slide-area"></div>
+      <div class="slide-area" id="next-slide-area"></div>
+    </section>
+
+    <div id="help" style="display: none">
+      Use the left and right arrow keys or click the left and right edges of the
+      page to navigate between slides.<br />
+      (Press 'H' or navigate to hide this message.)
+    </div>
+
+    <script src="./index/play.js"></script>
+    <link rel="stylesheet" type="text/css" href="./index/css" /><link
+      rel="stylesheet"
+      type="text/css"
+      href="./index/styles.css"
+    />
+  </body>
+</html>

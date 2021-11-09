@@ -14,9 +14,24 @@ https://alextanhongpin.github.io/
 
 ## Application errors
 
-.play main.go
 
-## Categorizing errors
+End-users perspective:
+- Email is invalid
+- You do not have permission to approve this. Please send an email to admin@yourcompany.com to request approval.
+- Please attach your resume before submitting.
+
+
+Monitoring agent perspective:
+- `{"error": "Email is invalid"}`
+
+## Error representation
+
+The minimal field required for generic errors:
+
+.code domain/errors/errors.go /^type Error/,/\}/
+
+
+## Error Kinds
 
 - `Kind` describes the breakdown of errors
 
@@ -24,8 +39,8 @@ https://alextanhongpin.github.io/
 
 ## Error Codes
 
-
-Use `errors.toml` to describe errors:
+- Unique identifier for each error type
+- Example of error codes as `errors.toml`:
 
 .code domain/entity/user/errors.toml
 
@@ -34,4 +49,67 @@ Use `errors.toml` to describe errors:
 - `errors.C` loads errors by error code
 - `errors.P` loads partial errors by error code
 
-.code domain/entity/user/user.go /\/\/go\:/,/^\)/
+.code domain/entity/user/user.go /\/\/go\:/,/Age/ HLxx
+
+
+## Sentinel Error, Partial errors
+
+WIP
+
+## Errors across layers
+
+- Database errors
+- API errors
+- conversion to and from
+
+
+## Public and private errors
+
+- Some errors should be visible to end users (aka validation error), while others not only through monitoring agent (database error, network error)
+- How to separate them?
+
+## Fail fast or validate as whole
+
+- Complex forms on the Frontend requires detail errors for each fields
+- Monitoring agent requires sufficient information for when errors happens
+- Fail fast: return on first error, validate as whole: return aggregated errors
+
+
+## Designing errors
+
+- Frontend Client: REST (Problem detail?) and GraphQL
+- Monitoring agent: serializable JSON errors
+
+## Action, location and reason
+
+- Action: failed to create user
+- Location: email
+- Reason: email is invalid
+
+
+## Actionables from errors
+
+- fix the issue
+- add more context to vague errors
+- alert on threshold exceeded
+
+
+## Tracing errors
+
+- correlation ids
+- opentracing
+
+
+## The language of errors
+
+- Important to standardize
+- Technical vs laymen
+- Noun based: Account creation failed when validating email
+- Verb based: Failed to create account/Create account failed
+- use pattern: <operation> failed at <location> because <reason>, Create account failed at email validation because email exists.
+
+## Bulk errors
+
+For bulk operations, like uploading CSV with thousands of rows
+- fail fast?
+- summary of errors: n rows failed because of ...
