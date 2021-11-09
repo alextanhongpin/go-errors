@@ -92,6 +92,7 @@ WIP
 - fix the issue
 - add more context to vague errors
 - alert on threshold exceeded
+- retries
 
 
 ## Tracing errors
