@@ -11,15 +11,12 @@ alextan220990@gmail.com
 https://alextanhongpin.github.io/
 
 
-
 ## Application errors
-
 
 End-users perspective:
 - Email is invalid
 - You do not have permission to approve this. Please send an email to admin@yourcompany.com to request approval.
 - Please attach your resume before submitting.
-
 
 Monitoring agent perspective:
 - `{"error": "Email is invalid"}`
@@ -51,10 +48,83 @@ The minimal field required for generic errors:
 
 .code domain/entity/user/user.go /\/\/go\:/,/Age/ HLxx
 
+## Error category
 
-## Sentinel Error, Partial errors
+Errors can generally be separated into three main category:
+- validation errors
+- domain errors
+- internal errors
 
-WIP
+## Validation errors
+
+When user provides a bad input
+- missing fields on required fields (or extra fields)
+- zero values (empty string, 0 number)
+- boundaries (min/max)
+
+## Domain errors
+
+When business rules fails to execute
+- invalid state transition
+- impossible states (negative balance, creating orders when out of stock,
+	making purchases when no balance)
+- unauthorized (lacking permission)
+- duplicate entity creation (e.g. creating two same category)
+
+May overlap a little with validation errors. Generally usecases expects inputs
+to be fully sanitized and validated, hence if you find yourself duplicating
+errors, you can just perform an input validation, and panic (in golang) or
+throw exceptions in usecases when they appear to be invalid later (or bypassing
+the initial input validation).
+
+## Internal errors
+
+Usually technical errors such as database, network etc
+- failed database constraints
+- trigger failure
+- failure when making HTTP requests
+
+When putting business logic in database (triggers, constraints, uniqueness, not null), you might want to translate them back to domain errors where possible.
+
+## Error JSON
+
+Validation error:
+```json
+{
+	"error": {
+		"kind": "BAD_INPUT",
+		"code": "account.badInput",
+		"message": "Validation failed for account creation",
+		"fields": [
+			{
+				"name": "email",
+				"reason": "Email format is invalid"
+			},
+			{
+				"name": "password",
+				"reason": "Password too short"
+			}
+		]
+	}
+}
+```
+
+Failed precondition:
+```json
+{
+	"error": {
+		"kind": "FAILED_PRECONDITION",
+		"code": "account.duplicate",
+		"message": "An account with the email already exists"
+	}
+}
+```
+
+## Pre/Post-validation
+
+
+- Pre: return flags that indicates something can be done
+- Post: execute, then return errors
 
 ## Errors across layers
 
@@ -101,7 +171,7 @@ WIP
 - opentracing
 
 
-## The language of errors
+## Pattern language for errors
 
 - Important to standardize
 - Technical vs laymen
