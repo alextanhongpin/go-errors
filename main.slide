@@ -20,6 +20,7 @@ End-users perspective:
 
 Monitoring agent perspective:
 - `{"error": "Email is invalid"}`
+- hello testing
 
 ## Error representation
 
