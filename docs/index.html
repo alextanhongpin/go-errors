@@ -53,21 +53,96 @@
   
       <article >
       
-        <h3>Application errors</h3>
-        <p>End-users perspective:</p>
-<ul>
-<li>Email is invalid</li>
-<li>You do not have permission to approve this. Please send an email to admin@yourcompany.com to request approval.</li>
-<li>Please attach your resume before submitting.</li>
-</ul>
-<p>Monitoring agent perspective:</p>
-<ul>
-<li><code>{&quot;error&quot;: &quot;Email is invalid&quot;}</code></li>
-<li>hello testing</li>
+        <h3>Agenda</h3>
+        <ul>
+<li>what is an error?</li>
+<li>designing errors</li>
 </ul>
 
       
       <span class="pagenumber">2</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h3>What is an error?</h3>
+        <p>The reason something went wrong.</p>
+<ul>
+<li>reason: why</li>
+<li>something: what</li>
+</ul>
+
+      
+      <span class="pagenumber">3</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h3>Errors example</h3>
+        <p>Bad</p>
+<ul>
+<li>Email is invalid</li>
+<li>Cannot place order</li>
+<li>Unauthorized</li>
+</ul>
+<p>Better</p>
+<ul>
+<li>Register account failed because email or password is invalid. Please try again.</li>
+<li>Place order failed because the item is out of stock. Please select a different item.</li>
+<li>You do not have access to the resource above. Send an email to admin@yourcompany.com to request access.</li>
+</ul>
+
+      
+      <span class="pagenumber">4</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h3>How errors are used</h3>
+        <p>Primary stakeholders</p>
+<ul>
+<li>Frontend client, aka end-users</li>
+<li>Developers, through monitoring/tracing/logging system</li>
+</ul>
+
+      
+      <span class="pagenumber">5</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h3>Frontend errors</h3>
+        <ul>
+<li>validation errors: warns user when input is invalid, and provide hints on how to amend it</li>
+<li>failed preconditions/authorization errors: when certain actions cannot be performed</li>
+<li>usually requires localization (ideally through server side, not client side, since evolving errors is hard especially for mobile which requires a new app release)</li>
+</ul>
+
+      
+      <span class="pagenumber">6</span>
+      </article>
+  
+  
+  
+      <article >
+      
+        <h3>Backend errors</h3>
+        <p>Monitoring/tracing/logging system</p>
+<ul>
+<li>exact location in source code where errors happens</li>
+<li>rarely reporting validation errors, more on failed preconditions</li>
+</ul>
+
+      
+      <span class="pagenumber">7</span>
       </article>
   
   
@@ -88,7 +163,7 @@
 </div>
 
       
-      <span class="pagenumber">3</span>
+      <span class="pagenumber">8</span>
       </article>
   
   
@@ -121,7 +196,7 @@
 </div>
 
       
-      <span class="pagenumber">4</span>
+      <span class="pagenumber">9</span>
       </article>
   
   
@@ -144,7 +219,7 @@
 </div>
 
       
-      <span class="pagenumber">5</span>
+      <span class="pagenumber">10</span>
       </article>
   
   
@@ -177,7 +252,7 @@
 </div>
 
       
-      <span class="pagenumber">6</span>
+      <span class="pagenumber">11</span>
       </article>
   
   
@@ -193,7 +268,7 @@
 </ul>
 
       
-      <span class="pagenumber">7</span>
+      <span class="pagenumber">12</span>
       </article>
   
   
@@ -206,10 +281,27 @@
 <li>missing fields on required fields (or extra fields)</li>
 <li>zero values (empty string, 0 number)</li>
 <li>boundaries (min/max)</li>
+<li>simple way to represent: one field one error, e.g.</li>
 </ul>
+<pre><code class="language-json">{
+    &quot;email&quot;: &quot;john.doe@mail&quot;,
+    &quot;password&quot;: &quot;123&quot;
+}
+{
+    &quot;error&quot;: {
+        &quot;kind&quot;: &quot;BadInput&quot;,
+        &quot;code&quot;: &quot;account.createAccountBadInput&quot;,
+        &quot;reason&quot;: &quot;Register account failed because email or password is invalid&quot;,
+        &quot;errors&quot;: {
+            &quot;email&quot;: &quot;Email format is invalid&quot;,
+            &quot;password&quot;: &quot;Password too short&quot;
+        }
+    }
+}
+</code></pre>
 
       
-      <span class="pagenumber">8</span>
+      <span class="pagenumber">13</span>
       </article>
   
   
@@ -232,7 +324,7 @@ throw exceptions in usecases when they appear to be invalid later (or bypassing
 the initial input validation).</p>
 
       
-      <span class="pagenumber">9</span>
+      <span class="pagenumber">14</span>
       </article>
   
   
@@ -249,7 +341,7 @@ the initial input validation).</p>
 <p>When putting business logic in database (triggers, constraints, uniqueness, not null), you might want to translate them back to domain errors where possible.</p>
 
       
-      <span class="pagenumber">10</span>
+      <span class="pagenumber">15</span>
       </article>
   
   
@@ -287,7 +379,7 @@ the initial input validation).</p>
 </code></pre>
 
       
-      <span class="pagenumber">11</span>
+      <span class="pagenumber">16</span>
       </article>
   
   
@@ -301,7 +393,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">12</span>
+      <span class="pagenumber">17</span>
       </article>
   
   
@@ -316,7 +408,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">13</span>
+      <span class="pagenumber">18</span>
       </article>
   
   
@@ -330,7 +422,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">14</span>
+      <span class="pagenumber">19</span>
       </article>
   
   
@@ -345,7 +437,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">15</span>
+      <span class="pagenumber">20</span>
       </article>
   
   
@@ -359,7 +451,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">16</span>
+      <span class="pagenumber">21</span>
       </article>
   
   
@@ -374,7 +466,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">17</span>
+      <span class="pagenumber">22</span>
       </article>
   
   
@@ -390,7 +482,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">18</span>
+      <span class="pagenumber">23</span>
       </article>
   
   
@@ -404,7 +496,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">19</span>
+      <span class="pagenumber">24</span>
       </article>
   
   
@@ -421,7 +513,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">20</span>
+      <span class="pagenumber">25</span>
       </article>
   
   
@@ -436,7 +528,7 @@ the initial input validation).</p>
 </ul>
 
       
-      <span class="pagenumber">21</span>
+      <span class="pagenumber">26</span>
       </article>
   
   

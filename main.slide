@@ -11,16 +11,49 @@ alextan220990@gmail.com
 https://alextanhongpin.github.io/
 
 
-## Application errors
+## Agenda
 
-End-users perspective:
+- what is an error?
+- designing errors
+
+
+## What is an error?
+
+
+The reason something went wrong.
+
+- reason: why
+- something: what
+
+## Errors example
+
+Bad
 - Email is invalid
-- You do not have permission to approve this. Please send an email to admin@yourcompany.com to request approval.
-- Please attach your resume before submitting.
+- Cannot place order
+- Unauthorized
 
-Monitoring agent perspective:
-- `{"error": "Email is invalid"}`
-- hello testing
+Better
+- Register account failed because email or password is invalid. Please try again.
+- Place order failed because the item is out of stock. Please select a different item.
+- You do not have access to the resource above. Send an email to admin@yourcompany.com to request access.
+
+## How errors are used
+
+Primary stakeholders
+- Frontend client, aka end-users
+- Developers, through monitoring/tracing/logging system
+
+## Frontend errors
+
+- validation errors: warns user when input is invalid, and provide hints on how to amend it
+- failed preconditions/authorization errors: when certain actions cannot be performed
+- usually requires localization (ideally through server side, not client side, since evolving errors is hard especially for mobile which requires a new app release)
+
+## Backend errors
+
+Monitoring/tracing/logging system
+- exact location in source code where errors happens
+- rarely reporting validation errors, more on failed preconditions
 
 ## Error representation
 
@@ -62,6 +95,27 @@ When user provides a bad input
 - missing fields on required fields (or extra fields)
 - zero values (empty string, 0 number)
 - boundaries (min/max)
+- simple way to represent: one field one error, e.g.
+
+```json
+// Request json.
+{
+	"email": "john.doe@mail",
+	"password": "123"
+}
+// Error response json.
+{
+	"error": {
+		"kind": "BadInput",
+		"code": "account.createAccountBadInput",
+		"reason": "Register account failed because email or password is invalid",
+		"errors": {
+			"email": "Email format is invalid",
+			"password": "Password too short"
+		}
+	}
+}
+```
 
 ## Domain errors
 
