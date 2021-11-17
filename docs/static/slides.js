@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-var PERMANENT_URL_PREFIX = '/static/';
+var PERMANENT_URL_PREFIX = "/static/";
 
-var SLIDE_CLASSES = ['far-past', 'past', 'current', 'next', 'far-next'];
+var SLIDE_CLASSES = ["far-past", "past", "current", "next", "far-next"];
 
 var PM_TOUCH_SENSITIVITY = 15;
 
@@ -15,22 +15,22 @@ var curSlide;
  * (http://purl.eligrey.com/github/classList.js/blob/master/classList.js) */
 
 if (
-  typeof document !== 'undefined' &&
-  !('classList' in document.createElement('a'))
+  typeof document !== "undefined" &&
+  !("classList" in document.createElement("a"))
 ) {
-  (function(view) {
-    var classListProp = 'classList',
-      protoProp = 'prototype',
+  (function (view) {
+    var classListProp = "classList",
+      protoProp = "prototype",
       elemCtrProto = (view.HTMLElement || view.Element)[protoProp],
       objCtr = Object;
     (strTrim =
       String[protoProp].trim ||
-      function() {
-        return this.replace(/^\s+|\s+$/g, '');
+      function () {
+        return this.replace(/^\s+|\s+$/g, "");
       }),
       (arrIndexOf =
         Array[protoProp].indexOf ||
-        function(item) {
+        function (item) {
           for (var i = 0, len = this.length; i < len; i++) {
             if (i in this && this[i] === item) {
               return i;
@@ -39,75 +39,75 @@ if (
           return -1;
         }),
       // Vendors: please allow content code to instantiate DOMExceptions
-      (DOMEx = function(type, message) {
+      (DOMEx = function (type, message) {
         this.name = type;
         this.code = DOMException[type];
         this.message = message;
       }),
-      (checkTokenAndGetIndex = function(classList, token) {
-        if (token === '') {
+      (checkTokenAndGetIndex = function (classList, token) {
+        if (token === "") {
           throw new DOMEx(
-            'SYNTAX_ERR',
-            'An invalid or illegal string was specified'
+            "SYNTAX_ERR",
+            "An invalid or illegal string was specified"
           );
         }
         if (/\s/.test(token)) {
           throw new DOMEx(
-            'INVALID_CHARACTER_ERR',
-            'String contains an invalid character'
+            "INVALID_CHARACTER_ERR",
+            "String contains an invalid character"
           );
         }
         return arrIndexOf.call(classList, token);
       }),
-      (ClassList = function(elem) {
+      (ClassList = function (elem) {
         var trimmedClasses = strTrim.call(elem.className),
           classes = trimmedClasses ? trimmedClasses.split(/\s+/) : [];
         for (var i = 0, len = classes.length; i < len; i++) {
           this.push(classes[i]);
         }
-        this._updateClassName = function() {
+        this._updateClassName = function () {
           elem.className = this.toString();
         };
       }),
       (classListProto = ClassList[protoProp] = []),
-      (classListGetter = function() {
+      (classListGetter = function () {
         return new ClassList(this);
       });
     // Most DOMException implementations don't allow calling DOMException's toString()
     // on non-DOMExceptions. Error's toString() is sufficient here.
     DOMEx[protoProp] = Error[protoProp];
-    classListProto.item = function(i) {
+    classListProto.item = function (i) {
       return this[i] || null;
     };
-    classListProto.contains = function(token) {
-      token += '';
+    classListProto.contains = function (token) {
+      token += "";
       return checkTokenAndGetIndex(this, token) !== -1;
     };
-    classListProto.add = function(token) {
-      token += '';
+    classListProto.add = function (token) {
+      token += "";
       if (checkTokenAndGetIndex(this, token) === -1) {
         this.push(token);
         this._updateClassName();
       }
     };
-    classListProto.remove = function(token) {
-      token += '';
+    classListProto.remove = function (token) {
+      token += "";
       var index = checkTokenAndGetIndex(this, token);
       if (index !== -1) {
         this.splice(index, 1);
         this._updateClassName();
       }
     };
-    classListProto.toggle = function(token) {
-      token += '';
+    classListProto.toggle = function (token) {
+      token += "";
       if (checkTokenAndGetIndex(this, token) === -1) {
         this.add(token);
       } else {
         this.remove(token);
       }
     };
-    classListProto.toString = function() {
-      return this.join(' ');
+    classListProto.toString = function () {
+      return this.join(" ");
     };
 
     if (objCtr.defineProperty) {
@@ -135,7 +135,7 @@ if (
 /* Slide movement */
 
 function hideHelpText() {
-  document.getElementById('help').style.display = 'none';
+  document.getElementById("help").style.display = "none";
 }
 
 function getSlideEl(no) {
@@ -170,19 +170,19 @@ function updateSlides() {
   for (var i = 0; i < slideEls.length; i++) {
     switch (i) {
       case curSlide - 2:
-        updateSlideClass(i, 'far-past');
+        updateSlideClass(i, "far-past");
         break;
       case curSlide - 1:
-        updateSlideClass(i, 'past');
+        updateSlideClass(i, "past");
         break;
       case curSlide:
-        updateSlideClass(i, 'current');
+        updateSlideClass(i, "current");
         break;
       case curSlide + 1:
-        updateSlideClass(i, 'next');
+        updateSlideClass(i, "next");
         break;
       case curSlide + 2:
-        updateSlideClass(i, 'far-next');
+        updateSlideClass(i, "far-next");
         break;
       default:
         updateSlideClass(i);
@@ -193,7 +193,7 @@ function updateSlides() {
   triggerLeaveEvent(curSlide - 1);
   triggerEnterEvent(curSlide);
 
-  window.setTimeout(function() {
+  window.setTimeout(function () {
     // Hide after the slide
     disableSlideFrames(curSlide - 2);
   }, 301);
@@ -234,13 +234,13 @@ function triggerEnterEvent(no) {
     return;
   }
 
-  var onEnter = el.getAttribute('onslideenter');
+  var onEnter = el.getAttribute("onslideenter");
   if (onEnter) {
     new Function(onEnter).call(el);
   }
 
-  var evt = document.createEvent('Event');
-  evt.initEvent('slideenter', true, true);
+  var evt = document.createEvent("Event");
+  evt.initEvent("slideenter", true, true);
   evt.slideNumber = no + 1; // Make it readable
 
   el.dispatchEvent(evt);
@@ -252,13 +252,13 @@ function triggerLeaveEvent(no) {
     return;
   }
 
-  var onLeave = el.getAttribute('onslideleave');
+  var onLeave = el.getAttribute("onslideleave");
   if (onLeave) {
     new Function(onLeave).call(el);
   }
 
-  var evt = document.createEvent('Event');
-  evt.initEvent('slideleave', true, true);
+  var evt = document.createEvent("Event");
+  evt.initEvent("slideleave", true, true);
   evt.slideNumber = no + 1; // Make it readable
 
   el.dispatchEvent(evt);
@@ -274,8 +274,8 @@ function handleTouchStart(event) {
     touchStartX = event.touches[0].pageX;
     touchStartY = event.touches[0].pageY;
 
-    document.body.addEventListener('touchmove', handleTouchMove, true);
-    document.body.addEventListener('touchend', handleTouchEnd, true);
+    document.body.addEventListener("touchmove", handleTouchMove, true);
+    document.body.addEventListener("touchend", handleTouchEnd, true);
   }
 }
 
@@ -305,8 +305,8 @@ function handleTouchEnd(event) {
 }
 
 function cancelTouch() {
-  document.body.removeEventListener('touchmove', handleTouchMove, true);
-  document.body.removeEventListener('touchend', handleTouchEnd, true);
+  document.body.removeEventListener("touchmove", handleTouchMove, true);
+  document.body.removeEventListener("touchend", handleTouchEnd, true);
 }
 
 /* Preloading frames */
@@ -317,7 +317,7 @@ function disableSlideFrames(no) {
     return;
   }
 
-  var frames = el.getElementsByTagName('iframe');
+  var frames = el.getElementsByTagName("iframe");
   for (var i = 0, frame; (frame = frames[i]); i++) {
     disableFrame(frame);
   }
@@ -329,26 +329,26 @@ function enableSlideFrames(no) {
     return;
   }
 
-  var frames = el.getElementsByTagName('iframe');
+  var frames = el.getElementsByTagName("iframe");
   for (var i = 0, frame; (frame = frames[i]); i++) {
     enableFrame(frame);
   }
 }
 
 function disableFrame(frame) {
-  frame.src = 'about:blank';
+  frame.src = "about:blank";
 }
 
 function enableFrame(frame) {
   var src = frame._src;
 
-  if (frame.src != src && src != 'about:blank') {
+  if (frame.src != src && src != "about:blank") {
     frame.src = src;
   }
 }
 
 function setupFrames() {
-  var frames = document.querySelectorAll('iframe');
+  var frames = document.querySelectorAll("iframe");
   for (var i = 0, frame; (frame = frames[i]); i++) {
     frame._src = frame.src;
     disableFrame(frame);
@@ -362,21 +362,21 @@ function setupFrames() {
 function setupInteraction() {
   /* Clicking and tapping */
 
-  var el = document.createElement('div');
-  el.className = 'slide-area';
-  el.id = 'prev-slide-area';
-  el.addEventListener('click', prevSlide, false);
-  document.querySelector('section.slides').appendChild(el);
+  var el = document.createElement("div");
+  el.className = "slide-area";
+  el.id = "prev-slide-area";
+  el.addEventListener("click", prevSlide, false);
+  document.querySelector("section.slides").appendChild(el);
 
-  var el = document.createElement('div');
-  el.className = 'slide-area';
-  el.id = 'next-slide-area';
-  el.addEventListener('click', nextSlide, false);
-  document.querySelector('section.slides').appendChild(el);
+  var el = document.createElement("div");
+  el.className = "slide-area";
+  el.id = "next-slide-area";
+  el.addEventListener("click", nextSlide, false);
+  document.querySelector("section.slides").appendChild(el);
 
   /* Swiping */
 
-  document.body.addEventListener('touchstart', handleTouchStart, false);
+  document.body.addEventListener("touchstart", handleTouchStart, false);
 }
 
 /* Hash functions */
@@ -392,14 +392,14 @@ function getCurSlideFromHash() {
 }
 
 function updateHash() {
-  location.replace('#' + (curSlide + 1));
+  location.replace("#" + (curSlide + 1));
 }
 
 /* Event listeners */
 
 function handleBodyKeyDown(event) {
   // If we're in a code element, only handle pgup/down.
-  var inCode = event.target.classList.contains('code');
+  var inCode = event.target.classList.contains("code");
 
   switch (event.keyCode) {
     case 78: // 'N' opens presenter notes window
@@ -442,28 +442,28 @@ function handleBodyKeyDown(event) {
 }
 
 function scaleSmallViewports() {
-  var el = document.querySelector('section.slides');
-  var transform = '';
+  var el = document.querySelector("section.slides");
+  var transform = "";
   var sWidthPx = 1250;
   var sHeightPx = 750;
   var sAspectRatio = sWidthPx / sHeightPx;
   var wAspectRatio = window.innerWidth / window.innerHeight;
 
   if (wAspectRatio <= sAspectRatio && window.innerWidth < sWidthPx) {
-    transform = 'scale(' + window.innerWidth / sWidthPx + ')';
+    transform = "scale(" + window.innerWidth / sWidthPx + ")";
   } else if (window.innerHeight < sHeightPx) {
-    transform = 'scale(' + window.innerHeight / sHeightPx + ')';
+    transform = "scale(" + window.innerHeight / sHeightPx + ")";
   }
   el.style.transform = transform;
 }
 
 function addEventListeners() {
-  document.addEventListener('keydown', handleBodyKeyDown, false);
+  document.addEventListener("keydown", handleBodyKeyDown, false);
   var resizeTimeout;
-  window.addEventListener('resize', function() {
+  window.addEventListener("resize", function () {
     // throttle resize events
     window.clearTimeout(resizeTimeout);
-    resizeTimeout = window.setTimeout(function() {
+    resizeTimeout = window.setTimeout(function () {
       resizeTimeout = null;
       scaleSmallViewports();
     }, 50);
@@ -471,14 +471,14 @@ function addEventListeners() {
 
   // Force reset transform property of section.slides when printing page.
   // Use both onbeforeprint and matchMedia for compatibility with different browsers.
-  var beforePrint = function() {
-    var el = document.querySelector('section.slides');
-    el.style.transform = '';
+  var beforePrint = function () {
+    var el = document.querySelector("section.slides");
+    el.style.transform = "";
   };
   window.onbeforeprint = beforePrint;
   if (window.matchMedia) {
-    var mediaQueryList = window.matchMedia('print');
-    mediaQueryList.addListener(function(mql) {
+    var mediaQueryList = window.matchMedia("print");
+    mediaQueryList.addListener(function (mql) {
       if (mql.matches) beforePrint();
     });
   }
@@ -487,38 +487,38 @@ function addEventListeners() {
 /* Initialization */
 
 function addFontStyle() {
-  var el = document.createElement('link');
-  el.rel = 'stylesheet';
-  el.type = 'text/css';
+  var el = document.createElement("link");
+  el.rel = "stylesheet";
+  el.type = "text/css";
   el.href =
-    '//fonts.googleapis.com/css?family=' +
-    'Open+Sans:regular,semibold,italic,italicsemibold|Droid+Sans+Mono';
+    "//fonts.googleapis.com/css?family=" +
+    "Open+Sans:regular,semibold,italic,italicsemibold|Droid+Sans+Mono";
 
   document.body.appendChild(el);
 }
 
 function addGeneralStyle() {
-  var el = document.createElement('link');
-  el.rel = 'stylesheet';
-  el.type = 'text/css';
-  el.href = PERMANENT_URL_PREFIX + 'styles.css';
+  var el = document.createElement("link");
+  el.rel = "stylesheet";
+  el.type = "text/css";
+  el.href = PERMANENT_URL_PREFIX + "styles.css";
   document.body.appendChild(el);
 
-  var el = document.createElement('meta');
-  el.name = 'viewport';
-  el.content = 'width=device-width,height=device-height,initial-scale=1';
-  document.querySelector('head').appendChild(el);
+  var el = document.createElement("meta");
+  el.name = "viewport";
+  el.content = "width=device-width,height=device-height,initial-scale=1";
+  document.querySelector("head").appendChild(el);
 
-  var el = document.createElement('meta');
-  el.name = 'apple-mobile-web-app-capable';
-  el.content = 'yes';
-  document.querySelector('head').appendChild(el);
+  var el = document.createElement("meta");
+  el.name = "apple-mobile-web-app-capable";
+  el.content = "yes";
+  document.querySelector("head").appendChild(el);
 
   scaleSmallViewports();
 }
 
 function handleDomLoaded() {
-  slideEls = document.querySelectorAll('section.slides > article');
+  slideEls = document.querySelectorAll("section.slides > article");
 
   setupFrames();
 
@@ -531,14 +531,14 @@ function handleDomLoaded() {
   setupInteraction();
 
   if (
-    window.location.hostname == 'localhost' ||
-    window.location.hostname == '127.0.0.1' ||
-    window.location.hostname == '::1'
+    window.location.hostname == "localhost" ||
+    window.location.hostname == "127.0.0.1" ||
+    window.location.hostname == "::1"
   ) {
     hideHelpText();
   }
 
-  document.body.classList.add('loaded');
+  document.body.classList.add("loaded");
 
   setupNotesSync();
 }
@@ -546,33 +546,33 @@ function handleDomLoaded() {
 function initialize() {
   getCurSlideFromHash();
 
-  if (window['_DEBUG']) {
-    PERMANENT_URL_PREFIX = '../';
+  if (window["_DEBUG"]) {
+    PERMANENT_URL_PREFIX = "../";
   }
 
-  if (window['_DCL']) {
+  if (window["_DCL"]) {
     handleDomLoaded();
   } else {
-    document.addEventListener('DOMContentLoaded', handleDomLoaded, false);
+    document.addEventListener("DOMContentLoaded", handleDomLoaded, false);
   }
 }
 
 // If ?debug exists then load the script relative instead of absolute
-if (!window['_DEBUG'] && document.location.href.indexOf('?debug') !== -1) {
+if (!window["_DEBUG"] && document.location.href.indexOf("?debug") !== -1) {
   document.addEventListener(
-    'DOMContentLoaded',
-    function() {
+    "DOMContentLoaded",
+    function () {
       // Avoid missing the DomContentLoaded event
-      window['_DCL'] = true;
+      window["_DCL"] = true;
     },
     false
   );
 
-  window['_DEBUG'] = true;
-  var script = document.createElement('script');
-  script.type = 'text/javascript';
-  script.src = '../slides.js';
-  var s = document.getElementsByTagName('script')[0];
+  window["_DEBUG"] = true;
+  var script = document.createElement("script");
+  script.type = "text/javascript";
+  script.src = "../slides.js";
+  var s = document.getElementsByTagName("script")[0];
   s.parentNode.insertBefore(script, s);
 
   // Remove this script
@@ -587,24 +587,24 @@ function setupNotesSync() {
   if (!notesEnabled) return;
 
   function setupPlayResizeSync() {
-    var out = document.getElementsByClassName('output');
+    var out = document.getElementsByClassName("output");
     for (var i = 0; i < out.length; i++) {
-      $(out[i]).bind('resize', function(event) {
-        if ($(event.target).hasClass('ui-resizable')) {
-          localStorage.setItem('play-index', i);
-          localStorage.setItem('output-style', out[i].style.cssText);
+      $(out[i]).bind("resize", function (event) {
+        if ($(event.target).hasClass("ui-resizable")) {
+          localStorage.setItem("play-index", i);
+          localStorage.setItem("output-style", out[i].style.cssText);
         }
       });
     }
   }
   function setupPlayCodeSync() {
-    var play = document.querySelectorAll('div.playground');
+    var play = document.querySelectorAll("div.playground");
     for (var i = 0; i < play.length; i++) {
-      play[i].addEventListener('input', inputHandler, false);
+      play[i].addEventListener("input", inputHandler, false);
 
       function inputHandler(e) {
-        localStorage.setItem('play-index', i);
-        localStorage.setItem('play-code', e.target.innerHTML);
+        localStorage.setItem("play-index", i);
+        localStorage.setItem("play-code", e.target.innerHTML);
       }
     }
   }
@@ -612,7 +612,7 @@ function setupNotesSync() {
   setupPlayCodeSync();
   setupPlayResizeSync();
   localStorage.setItem(destSlideKey(), curSlide);
-  window.addEventListener('storage', updateOtherWindow, false);
+  window.addEventListener("storage", updateOtherWindow, false);
 }
 
 // An update to local storage is caught only by the other window

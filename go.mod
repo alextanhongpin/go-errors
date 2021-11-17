@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/BurntSushi/toml v0.4.1 // indirect
+	github.com/alextanhongpin/go-present v0.0.0-20170605021603-cd61f2e47236 // indirect
 	github.com/yuin/goldmark v1.4.3 // indirect
 	golang.org/x/mod v0.5.1 // indirect
 	golang.org/x/net v0.0.0-20211105192438-b53810dc28af // indirect
