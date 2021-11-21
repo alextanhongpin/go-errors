@@ -30,3 +30,12 @@ There are several benefits to this approach:
 - [x] to be able to match errors by the error code/kind
 - [x] to be able to include meaningful context (aka data associated with the error)
 - [x] to be able to serialize errors to json (for logging)
+
+
+## How to implement it
+
+1. Define your error kinds 
+2. Define your error codes in the errors.toml
+3. Import and init the errors
+4. Call them
+5. Map your errors to http error codes
