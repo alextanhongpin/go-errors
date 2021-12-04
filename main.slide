@@ -20,14 +20,14 @@ https://alextanhongpin.github.io/
 ## What is an error?
 
 
-The reason something went wrong.
+The reason something went wrong and how to fix it
 
 - reason: why
 - something: what
 
 ## Errors example
 
-Bad
+Vague
 - Email is invalid
 - Cannot place order
 - Unauthorized
@@ -39,7 +39,7 @@ Better
 
 ## How errors are used
 
-Primary stakeholders
+Primary consumers:
 - Frontend client, aka end-users
 - Developers, through monitoring/tracing/logging system
 
@@ -177,11 +177,12 @@ Failed precondition:
 
 ## Pre/Post-validation
 
-
-- Pre: return flags that indicates something can be done
+Aka optimistic / persimistic enor handing 
+Ask for permission vs ask for forgiveness
+- Pre: return flags that indicates something thing can be done
 - Post: execute, then return errors
 
-## Errors across layers
+## Errors across layer
 
 - Database errors
 - API errors
