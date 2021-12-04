@@ -3,7 +3,6 @@ package errors
 import (
 	"bytes"
 	_ "embed"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -22,7 +21,7 @@ type M map[string]interface{}
 
 // Error represents an error.
 type Error struct {
-	Kind    Kind   `json:"kind"`
+	Kind    string `json:"kind"`
 	Code    Code   `json:"code"`
 	Message string `json:"message"`
 	Params  M      `json:"params,omitempty"`
@@ -31,39 +30,11 @@ type Error struct {
 // newError creates a new error. This should only be done by the error package.
 func newError(kind Kind, code Code, msg string) *Error {
 	return &Error{
-		Kind:    kind,
+		Kind:    kind.String(),
 		Code:    code,
 		Message: msg,
 		Params:  make(map[string]interface{}),
 	}
-}
-
-func (e *Error) MarshalJSON() ([]byte, error) {
-	var req = struct {
-		Kind    string `json:"kind"`
-		Code    Code   `json:"code"`
-		Message string `json:"message"`
-	}{
-		Kind:    e.Kind.String(),
-		Code:    e.Code,
-		Message: e.Message,
-	}
-	return json.Marshal(req)
-}
-
-func (e *Error) UnmarshalJSON(data []byte) error {
-	var req = struct {
-		Kind    string `json:"kind"`
-		Code    Code   `json:"code"`
-		Message string `json:"message"`
-	}{}
-	if err := json.Unmarshal(data, &req); err != nil {
-		return err
-	}
-	e.Kind = KindFromStr(req.Kind)
-	e.Code = req.Code
-	e.Message = req.Message
-	return nil
 }
 
 // Error fulfills the error interface.

@@ -6,7 +6,6 @@ import (
 	"github.com/alextanhongpin/go-errors/domain/errors"
 )
 
-//go:embed errors.toml
 var errorCodes []byte
 
 // User errors.

@@ -59,7 +59,7 @@ func TestError(t *testing.T) {
 		t.Error("errors.As should be UserIDNotFoundError")
 	}
 
-	if errors.NotFound != userIDNotFoundError.Kind {
+	if errors.NotFound.String() != userIDNotFoundError.Kind {
 		t.Error("userIDNotFoundError.Kind should be errors.NotFound")
 	}
 
