@@ -39,3 +39,6 @@ There are several benefits to this approach:
 3. Import and init the errors
 4. Call them
 5. Map your errors to http error codes
+
+
+https://engineering.zalando.com/posts/2021/04/modeling-errors-in-graphql.html
