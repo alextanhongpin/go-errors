@@ -11,6 +11,21 @@ import (
 //go:embed errors.toml
 var errorCodes []byte
 
+var eb = errors.NewBundle(
+	language.English,
+	[]language.Tag{language.English, language.MustParse("ms")},
+	[]errors.Kind{
+		"unknown",
+		"internal",
+		"bad_input",
+		"not_found",
+		"already_exists",
+		"failed_preconditions",
+		"unauthorized",
+		"forbidden",
+	},
+)
+
 // User errors.
 const (
 	MinAge = 13
@@ -18,10 +33,13 @@ const (
 )
 
 var (
-	_             = errors.MustRegister(language.English, errorCodes, toml.Unmarshal)
-	ErrNotFound   = errors.New("user.notFound")
-	ErrInvalidAge = errors.NewParams[InvalidAgeParams]("user.invalidAge").SetParams(InvalidAgeParams{MaxAge: MaxAge})
-	ErrUnderAge   = errors.NewParams[UnderAgeParams]("user.underAge").SetParams(UnderAgeParams{MinAge: MinAge})
+	_              = eb.MustLoad(errorCodes, toml.Unmarshal)
+	ErrNotFound    = eb.Code("user.notFound")
+	ErrInvalidName = errors.Partial[InvalidNameParams](eb.Code("user.invalidName"))
+	ErrInvalidAge  = errors.Partial[InvalidAgeParams](eb.Code("user.invalidAge")).
+			SetParams(InvalidAgeParams{MaxAge: MaxAge})
+	ErrUnderAge = errors.Partial[UnderAgeParams](eb.Code("user.underAge")).
+			SetParams(UnderAgeParams{MinAge: MinAge})
 )
 
 type InvalidAgeParams struct {
@@ -30,4 +48,8 @@ type InvalidAgeParams struct {
 
 type UnderAgeParams struct {
 	MinAge int64 `json:"minAge"`
+}
+
+type InvalidNameParams struct {
+	Name string `json:"name"`
 }

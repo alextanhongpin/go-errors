@@ -17,14 +17,17 @@ type Error struct {
 }
 
 func (e *Error) SetLanguage(lang language.Tag) *Error {
-	msg, ok := e.translations[lang]
-	if !ok {
-		panic(fmt.Errorf("language %q not supported", lang))
-	}
-	e.lang = lang
-	e.Message = msg
+	err := e.Clone()
 
-	return e
+	msg, ok := err.translations[lang]
+	if !ok {
+		panic(fmt.Errorf("%q.%q is not defined", err.Code, lang))
+	}
+
+	err.lang = lang
+	err.Message = msg
+
+	return err
 }
 
 // Error fulfills the error interface.
@@ -35,9 +38,19 @@ func (e Error) Error() string {
 // Is satisfies the error interface.
 func (e Error) Is(target error) bool {
 	var err *Error
-	if errors.As(target, err) {
+	if errors.As(target, &err) {
 		return err.Kind == e.Kind && err.Code == e.Code
 	}
 
 	return false
+}
+
+func (e *Error) Clone() *Error {
+	cerr := *e
+	cerr.translations = make(map[language.Tag]string)
+	for k, v := range e.translations {
+		cerr.translations[k] = v
+	}
+
+	return &cerr
 }

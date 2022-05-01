@@ -1,70 +1,46 @@
 package errors
 
 import (
-	"encoding/json"
-	"errors"
-	"fmt"
-
 	"golang.org/x/text/language"
 )
 
+type partialError[T any] interface {
+	SetParams(t T) *Error
+	Self() *Error
+}
+
 type ErrorParams[T any] struct {
-	err    *Error
-	Params T
+	err *Error
 }
 
 func NewErrorParams[T any](err *Error) *ErrorParams[T] {
 	return &ErrorParams[T]{
-		err: err,
+		err: err.Clone(),
 	}
 }
 
-func (e *ErrorParams[T]) SetLanguage(lang language.Tag) *ErrorParams[T] {
-	msg, ok := e.err.translations[lang]
-	if !ok {
-		panic(fmt.Errorf("language %q not supported", lang))
-	}
-	e.err.lang = lang
-	e.err.Message = msg
-
-	return e
+func Partial[T any](err *Error) partialError[T] {
+	return NewErrorParams[T](err)
 }
 
-func (e *ErrorParams[T]) SetParams(t T) *ErrorParams[T] {
-	e.Params = t
+func (e *ErrorParams[T]) SetParams(t T) *Error {
+	err := e.err.Clone()
+	newTranslations := make(map[language.Tag]string)
 
-	return e
-}
-
-// Error fulfills the error interface.
-func (e ErrorParams[T]) Error() string {
-	msg, err := makeTemplate(e.err.Message, e.Params)
-	if err != nil {
-		return e.err.Message
-	}
-	return msg
-}
-
-// Is satisfies the error interface.
-func (e ErrorParams[T]) Is(target error) bool {
-	var err *ErrorParams[T]
-	if errors.As(target, err) {
-		return err.err.Is(e.err)
+	for lang, msg := range err.translations {
+		tmsg, err := makeTemplate(msg, t)
+		if err != nil {
+			newTranslations[lang] = msg
+		} else {
+			newTranslations[lang] = tmsg
+		}
 	}
 
-	return false
+	err.translations = newTranslations
+	err.Message = newTranslations[err.lang]
+	return err
 }
 
-func (e ErrorParams[T]) MarshalJSON() ([]byte, error) {
-	return json.Marshal(struct {
-		Kind    string `json:"kind"`
-		Code    string `json:"code"`
-		Message string `json:"message"`
-		Params  T      `json:"params"`
-	}{
-		Kind:    e.err.Kind,
-		Code:    e.err.Code,
-		Message: e.Error(),
-		Params:  e.Params,
-	})
+func (e *ErrorParams[T]) Self() *Error {
+	return e.err.Clone()
 }

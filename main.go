@@ -11,49 +11,82 @@ import (
 )
 
 var (
-	_ = errors.AddLanguage(language.MustParse("ms"))
+	MS = language.MustParse("ms")
+	EN = language.English
 )
 
 func main() {
-	var err error
-
-	// This will fail, because it is a Partial error and does not fulfill the
-	// error interface.
-	//err = user.ErrInvalidAge
-	err = user.ErrInvalidAge
-	fmt.Println(err)
-	fmt.Printf("%#v\n", err)
-	fmt.Println(stderrors.Is(err, user.ErrInvalidAge))
-
-	err = user.ErrNotFound
-	fmt.Println(err)
-	fmt.Println(stderrors.Is(err, user.ErrNotFound))
-
-	err = fmt.Errorf("failed to find user: %w", err)
-	fmt.Println(err)
-
-	var userNotFoundErr *errors.Error
-	if stderrors.As(err, &userNotFoundErr) {
-		fmt.Println(userNotFoundErr)
-	}
-	b, err := json.Marshal(userNotFoundErr)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(string(b))
-
-	b, err = json.Marshal(user.ErrInvalidAge.SetLanguage(language.MustParse("ms")))
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(string(b))
+	debugErrInvalidAge(user.ErrInvalidAge)
+	debugErrInvalidName(user.ErrInvalidName.SetParams(user.InvalidNameParams{
+		Name: "J@hn",
+	}))
 }
 
-//Unknown            Kind = iota // unknown
-//Internal                       // internal
-//BadInput                       // bad_input
-//NotFound                       // not_found
-//AlreadyExists                  // already_exists
-//FailedPrecondition             // failed_precondition
-//Unauthorized                   // unauthorized
-//Forbidden                      // forbidden
+func debugErrInvalidAge(err error) {
+	fmt.Println("ErrInvalidAge:", err)
+	fmt.Println(stderrors.Is(err, user.ErrInvalidAge))
+
+	var userError *errors.Error
+	if stderrors.As(err, &userError) {
+		fmt.Println("Cast err back to UserInvalidAge success")
+		fmt.Println(userError.SetLanguage(MS))
+	}
+
+	{
+		b, merr := json.Marshal(err)
+		if merr != nil {
+			panic(merr)
+		}
+		fmt.Println("MarshalErrInvalidAge: err", string(b))
+	}
+
+	{
+		b, merr := json.Marshal(userError)
+		if merr != nil {
+			panic(merr)
+		}
+		fmt.Println("MarshalErrInvalidAge: userError EN", string(b))
+	}
+
+	{
+		b, merr := json.Marshal(userError.SetLanguage(MS))
+		if merr != nil {
+			panic(merr)
+		}
+		fmt.Println("MarshalErrInvalidAge: userError MS", string(b))
+	}
+}
+
+func debugErrInvalidName(err error) {
+	fmt.Println("ErrInvalidName:", err)
+	fmt.Println("IsErrInvalidName?", stderrors.Is(err, user.ErrInvalidName.Self()))
+
+	{
+		b, err := json.Marshal(err)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("MarshalErrInvalidName: error", string(b))
+	}
+
+	var userError *errors.Error
+	if stderrors.As(err, &userError) {
+		fmt.Println("MarshalErrInvalidNameSuccess")
+		{
+			b, err := json.Marshal(userError)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("MarshalErrInvalidName: userError EN", string(b))
+		}
+		{
+			b, err := json.Marshal(userError.SetLanguage(MS))
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println("MarshalErrInvalidName: userError MS", string(b))
+		}
+	} else {
+		panic("MarshalErrInvalidNameFailed")
+	}
+}
