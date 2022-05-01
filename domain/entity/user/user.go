@@ -3,28 +3,31 @@ package user
 import (
 	_ "embed"
 
+	"github.com/BurntSushi/toml"
 	"github.com/alextanhongpin/go-errors/domain/errors"
+	"golang.org/x/text/language"
 )
 
 //go:embed errors.toml
 var errorCodes []byte
 
 // User errors.
-var (
-	// Register error codes before using them.
-	_ = errors.Register(errorCodes)
-
-	// Sentinel error from a given error code.
-	ErrNotFound = errors.C("user.notFound")
-
-	// A partial error from a given error code. Partial must be called with
-	// Build, in order to ensure the params are passed in for constructing the
-	// error message.
-	ErrInvalidAge = errors.P("user.invalidAge")
-
-	// Uncomment to hit runtime error on duplicate key.
-	//DuplicateError = errors.C("user.notFound")
-
-	// Uncomment to hit runtime error on missing key.
-	//ErrInvalidEmail = errors.C("user.invalidEmail")
+const (
+	MinAge = 13
+	MaxAge = 150
 )
+
+var (
+	_             = errors.MustRegister(language.English, errorCodes, toml.Unmarshal)
+	ErrNotFound   = errors.New("user.notFound")
+	ErrInvalidAge = errors.NewParams[InvalidAgeParams]("user.invalidAge").SetParams(InvalidAgeParams{MaxAge: MaxAge})
+	ErrUnderAge   = errors.NewParams[UnderAgeParams]("user.underAge").SetParams(UnderAgeParams{MinAge: MinAge})
+)
+
+type InvalidAgeParams struct {
+	MaxAge int64 `json:"maxAge"`
+}
+
+type UnderAgeParams struct {
+	MinAge int64 `json:"minAge"`
+}

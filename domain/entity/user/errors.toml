@@ -1,5 +1,9 @@
 [not_found]
-"user.notFound" = "User not found"
+"user.notFound".en = "User not found"
+"user.notFound".ms = "Pengguna tidak dijumpai"
 
 [bad_input]
-"user.invalidAge" = "Age must be greater than {{.MaxAge}}"
+"user.invalidAge".en = "Age must be greater than {{.MaxAge}}"
+"user.invalidAge".ms = "Umur mestilah lebih besar daripada {{.MaxAge}}"
+"user.underAge".en = "You must be at least {{.MinAge}}"
+"user.underAge".ms = "Anda mestilah sekurang-kurangnya {{.MinAge}}"

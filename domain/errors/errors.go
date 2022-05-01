@@ -2,122 +2,104 @@ package errors
 
 import (
 	"bytes"
-	_ "embed"
 	"fmt"
 	"html/template"
-	"log"
 
-	"github.com/BurntSushi/toml"
+	"golang.org/x/text/language"
 )
 
-var errors = map[Code]*Error{}
-var uniqueErrors = map[Code]struct{}{}
-
-// Code represents the breakdown on an error.
-type Code string
-
-// M is an alias for map[string]interface{}.
-type M map[string]interface{}
-
-// Error represents an error.
-type Error struct {
-	Kind    string `json:"kind"`
-	Code    Code   `json:"code"`
-	Message string `json:"message"`
-	Params  M      `json:"params,omitempty"`
-}
-
-// newError creates a new error. This should only be done by the error package.
-func newError(kind Kind, code Code, msg string) *Error {
-	return &Error{
-		Kind:    kind.String(),
-		Code:    code,
-		Message: msg,
-		Params:  make(map[string]interface{}),
+var (
+	errorLanguages = map[language.Tag]bool{
+		language.English: true,
 	}
-}
+	errorByCode = map[string]*Error{}
+)
 
-// Error fulfills the error interface.
-func (e Error) Error() string {
-	msg, err := build(e.Message, e.Params)
-	if err != nil {
-		log.Printf("failed to build error message: %s\n", err)
+// AddLanguage adds new language support.
+// Also checks if existing errors has the translations for that language.
+func AddLanguage(lang language.Tag) bool {
+	if errorLanguages[lang] {
+		return false
 	}
-	return msg
-}
-
-// Build builds the error with the given params.
-func (e Error) Build(params M) *Error {
-	// Instead of overriding, we merge the params.
-	for k, v := range params {
-		e.Params[k] = v
+	for _, err := range errorByCode {
+		_, ok := err.translations[lang]
+		if !ok {
+			panic(fmt.Errorf("missing language %q for error code %q", lang, err.Code))
+		}
 	}
-	return &e
+
+	errorLanguages[lang] = true
+	return true
 }
 
-// Is satisfies the error interface.
-func (e Error) Is(target error) bool {
-	t, ok := target.(*Error)
+type unmarshallFn = func(data []byte, v any) error
+
+func MustRegister(lang language.Tag, raw []byte, fn unmarshallFn) bool {
+	if err := Register(lang, raw, fn); err != nil {
+		panic(err)
+	}
+	return true
+}
+
+func Register(lang language.Tag, raw []byte, fn unmarshallFn) error {
+	var data map[string]map[string]map[string]string
+	if err := fn(raw, &data); err != nil {
+		return err
+	}
+
+	for kind, translationsByCode := range data {
+		for code, messageByLanguage := range translationsByCode {
+			if _, ok := errorByCode[code]; ok {
+				return fmt.Errorf("error code exists: %s", code)
+			}
+			translations := make(map[language.Tag]string)
+			for lang, message := range messageByLanguage {
+				translations[language.MustParse(lang)] = message
+			}
+			for supportedLang := range errorLanguages {
+				if _, ok := translations[supportedLang]; !ok {
+					return fmt.Errorf("missing language %q for error code %q", supportedLang, code)
+				}
+			}
+
+			errorByCode[code] = &Error{
+				Code:         code,
+				Kind:         kind,
+				Message:      translations[lang],
+				lang:         lang,
+				translations: translations,
+			}
+		}
+	}
+
+	return nil
+}
+
+func New(code string) *Error {
+	err, ok := errorByCode[code]
 	if !ok {
-		return false
+		panic(fmt.Errorf("error code not found: %s", code))
 	}
-	return e.Kind == t.Kind &&
-		e.Code == t.Code
+
+	cerr := *err
+	cerr.translations = make(map[language.Tag]string)
+	for k, v := range err.translations {
+		cerr.translations[k] = v
+	}
+	return &cerr
 }
 
-// Is a shortcut for Is.
-func Is(err error, tgt interface{}) bool {
-	switch t := tgt.(type) {
-	case PartialError:
-		return t.Build(nil).Is(err)
-	case *Error:
-		return t.Is(err)
-	default:
-		return false
-	}
+func NewParams[T any](code string) *ErrorParams[T] {
+	return NewErrorParams[T](New(code))
 }
 
-func build(msg string, data map[string]interface{}) (string, error) {
+func makeTemplate(msg string, data any) (string, error) {
 	t := template.Must(template.New("").Parse(msg))
+
 	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
 		return msg, err
 	}
+
 	return buf.String(), nil
-}
-
-func checkUnique(code Code) {
-	_, exists := uniqueErrors[code]
-	if exists {
-		panic(fmt.Sprintf("error code already exists: %s", code))
-	}
-	uniqueErrors[code] = struct{}{}
-}
-
-func C(code Code) *Error {
-	checkUnique(code)
-
-	err, ok := errors[code]
-	if !ok {
-		panic(fmt.Sprintf("error code not found: %s", code))
-	}
-	return err
-}
-
-func P(code Code) PartialError {
-	return Partial(C(code))
-}
-
-func Register(raw []byte) bool {
-	var data map[string]map[string]string
-	if err := toml.Unmarshal(raw, &data); err != nil {
-		panic(err)
-	}
-	for kind, codes := range data {
-		for code, msg := range codes {
-			c := Code(code)
-			errors[c] = newError(KindFromStr(kind), c, msg)
-		}
-	}
-	return true
 }
