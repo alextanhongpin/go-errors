@@ -2,13 +2,15 @@ package user
 
 import (
 	_ "embed"
+	"encoding/json"
 
-	"github.com/BurntSushi/toml"
 	"github.com/alextanhongpin/go-errors/domain/errors"
 	"golang.org/x/text/language"
 )
 
-//go:embed errors.toml
+//go:embed errors.json
+// go:embed errors.toml
+// go:embed errors.yaml
 var errorCodes []byte
 
 var eb = errors.NewBundle(
@@ -33,7 +35,9 @@ const (
 )
 
 var (
-	_              = eb.MustLoad(errorCodes, toml.Unmarshal)
+	//_              = eb.MustLoad(errorCodes, toml.Unmarshal)
+	//_              = eb.MustLoad(errorCodes, yaml.Unmarshal)
+	_              = eb.MustLoad(errorCodes, json.Unmarshal)
 	ErrNotFound    = eb.Code("user.notFound")
 	ErrInvalidName = errors.Partial[InvalidNameParams](eb.Code("user.invalidName"))
 	ErrInvalidAge  = errors.Partial[InvalidAgeParams](eb.Code("user.invalidAge")).
