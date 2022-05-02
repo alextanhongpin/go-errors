@@ -1,6 +1,7 @@
 package errors
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"golang.org/x/text/language"
@@ -10,43 +11,67 @@ type Code string
 type Kind string
 
 type Bundle struct {
-	errorByCode map[Code]*Error
-	kinds       map[Kind]bool
-	langs       map[language.Tag]bool
-	defaultLang language.Tag
+	errorByCode      map[Code]*Error
+	allowedKinds     map[Kind]bool
+	allowedLanguages map[language.Tag]bool
+	defaultLang      language.Tag
+	unmarshalFn      func(raw []byte, v any) error
 }
 
-func NewBundle(defaultLang language.Tag, langs []language.Tag, kinds []Kind) *Bundle {
-	langs = append(langs, defaultLang)
+type Options struct {
+	DefaultLanguage  language.Tag
+	AllowedLanguages []language.Tag
+	AllowedKinds     []Kind
+	UnmarshalFn      func([]byte, any) error
+}
 
-	langMap := make(map[language.Tag]bool)
-	for _, lang := range langs {
-		langMap[lang] = true
+func NewBundle(opt *Options) *Bundle {
+	if opt == nil {
+		opt = &Options{
+			DefaultLanguage:  language.English,
+			UnmarshalFn:      json.Unmarshal,
+			AllowedKinds:     make([]Kind, 0),
+			AllowedLanguages: make([]language.Tag, 0),
+		}
 	}
 
-	kindMap := make(map[Kind]bool)
-	for _, kind := range kinds {
-		kindMap[kind] = true
+	if opt.DefaultLanguage == language.Und {
+		opt.DefaultLanguage = language.English
+	}
+
+	if opt.UnmarshalFn == nil {
+		opt.UnmarshalFn = json.Unmarshal
+	}
+
+	allowedLanguages := make(map[language.Tag]bool)
+	allowedLanguages[opt.DefaultLanguage] = true
+
+	for _, lang := range opt.AllowedLanguages {
+		allowedLanguages[lang] = true
+	}
+
+	allowedKinds := make(map[Kind]bool)
+	for _, kind := range opt.AllowedKinds {
+		allowedKinds[kind] = true
 	}
 
 	return &Bundle{
-		defaultLang: defaultLang,
-		langs:       langMap,
-		kinds:       kindMap,
-		errorByCode: make(map[Code]*Error),
+		defaultLang:      opt.DefaultLanguage,
+		allowedLanguages: allowedLanguages,
+		allowedKinds:     allowedKinds,
+		errorByCode:      make(map[Code]*Error),
+		unmarshalFn:      opt.UnmarshalFn,
 	}
 }
 
-type unmarshallFn = func(data []byte, v any) error
-
-func (b *Bundle) Load(errorBytes []byte, fn unmarshallFn) error {
+func (b *Bundle) Load(errorBytes []byte) error {
 	var data map[Kind]map[Code]map[string]string
-	if err := fn(errorBytes, &data); err != nil {
+	if err := b.unmarshalFn(errorBytes, &data); err != nil {
 		return err
 	}
 
 	for kind, translationsByCode := range data {
-		if !b.kinds[kind] {
+		if !b.allowedKinds[kind] {
 			return fmt.Errorf("%w: %s", ErrInvalidKind, kind)
 		}
 
@@ -60,7 +85,7 @@ func (b *Bundle) Load(errorBytes []byte, fn unmarshallFn) error {
 				translations[language.MustParse(lang)] = message
 			}
 
-			for lang := range b.langs {
+			for lang := range b.allowedLanguages {
 				if _, ok := translations[lang]; !ok {
 					return fmt.Errorf("%w: %q.%q", ErrTranslationUndefined, code, lang)
 				}
@@ -80,8 +105,8 @@ func (b *Bundle) Load(errorBytes []byte, fn unmarshallFn) error {
 	return nil
 }
 
-func (b *Bundle) MustLoad(errorBytes []byte, fn unmarshallFn) bool {
-	if err := b.Load(errorBytes, fn); err != nil {
+func (b *Bundle) MustLoad(errorBytes []byte) bool {
+	if err := b.Load(errorBytes); err != nil {
 		panic(err)
 	}
 

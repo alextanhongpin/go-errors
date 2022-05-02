@@ -2,10 +2,10 @@ package user
 
 import (
 	_ "embed"
-	"encoding/json"
 
 	"github.com/alextanhongpin/go-errors/domain/errors"
 	"golang.org/x/text/language"
+	"gopkg.in/yaml.v2"
 )
 
 //go:embed errors.json
@@ -13,10 +13,15 @@ import (
 // go:embed errors.yaml
 var errorCodes []byte
 
-var eb = errors.NewBundle(
-	language.English,
-	[]language.Tag{language.English, language.MustParse("ms")},
-	[]errors.Kind{
+var (
+	EN = language.English
+	MS = language.Malay
+)
+
+var eb = errors.NewBundle(&errors.Options{
+	DefaultLanguage:  EN,
+	AllowedLanguages: []language.Tag{MS},
+	AllowedKinds: []errors.Kind{
 		"unknown",
 		"internal",
 		"bad_input",
@@ -26,7 +31,10 @@ var eb = errors.NewBundle(
 		"unauthorized",
 		"forbidden",
 	},
-)
+	UnmarshalFn: yaml.Unmarshal,
+	//UnmarshalFn: toml.Unmarshal,
+	//UnmarshalFn: json.Unmarshal,
+})
 
 // User errors.
 const (
@@ -35,9 +43,7 @@ const (
 )
 
 var (
-	//_              = eb.MustLoad(errorCodes, toml.Unmarshal)
-	//_              = eb.MustLoad(errorCodes, yaml.Unmarshal)
-	_              = eb.MustLoad(errorCodes, json.Unmarshal)
+	_              = eb.MustLoad(errorCodes)
 	ErrNotFound    = eb.Code("user.notFound")
 	ErrInvalidName = errors.Partial[InvalidNameParams](eb.Code("user.invalidName"))
 	ErrInvalidAge  = errors.Partial[InvalidAgeParams](eb.Code("user.invalidAge")).

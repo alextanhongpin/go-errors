@@ -9,6 +9,12 @@ type PartialError[T any] interface {
 	Self() *Error
 }
 
+// Partial returns a partial error that needs params to be
+// set.
+func Partial[T any](err *Error) PartialError[T] {
+	return NewErrorParams[T](err)
+}
+
 type ErrorParams[T any] struct {
 	err *Error
 }
@@ -42,10 +48,4 @@ func (e *ErrorParams[T]) SetParams(params T) *Error {
 // errors.Is without setting the params.
 func (e *ErrorParams[T]) Self() *Error {
 	return e.err.Clone()
-}
-
-// Partial returns a partial error that needs params to be
-// set.
-func Partial[T any](err *Error) PartialError[T] {
-	return NewErrorParams[T](err)
 }

@@ -11,14 +11,14 @@ import (
 )
 
 var (
-	MS = language.MustParse("ms")
 	EN = language.English
+	MS = language.Malay
 )
 
 func main() {
 	debugErrValidationErrors(user.ErrValidationErrors.SetParams([]user.ValidationFieldError{
-		{"name", "required"},
-		{"age", "required"},
+		{Field: "name", Reason: "required"},
+		{Field: "age", Reason: "required"},
 	}))
 	debugErrInvalidAge(user.ErrInvalidAge)
 	debugErrInvalidName(user.ErrInvalidName.SetParams(user.InvalidNameParams{
