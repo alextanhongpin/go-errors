@@ -16,10 +16,27 @@ var (
 )
 
 func main() {
+	debugErrValidationErrors(user.ErrValidationErrors.SetParams([]user.ValidationFieldError{
+		{"name", "required"},
+		{"age", "required"},
+	}))
 	debugErrInvalidAge(user.ErrInvalidAge)
 	debugErrInvalidName(user.ErrInvalidName.SetParams(user.InvalidNameParams{
 		Name: "J@hn",
 	}))
+}
+
+func debugErrValidationErrors(err error) {
+	fmt.Println("ErrValidationErrors:", err)
+	fmt.Println(stderrors.Is(err, user.ErrValidationErrors.Self()))
+
+	{
+		b, merr := json.Marshal(err)
+		if merr != nil {
+			panic(merr)
+		}
+		fmt.Println("MarshalErrValidationErrors: err", string(b))
+	}
 }
 
 func debugErrInvalidAge(err error) {

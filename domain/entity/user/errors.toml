@@ -9,3 +9,5 @@
 "user.invalidAge".ms = "Umur tidak boleh melebihi {{.MaxAge}}"
 "user.underAge".en = "You must be at least {{.MinAge}}"
 "user.underAge".ms = "Anda mestilah sekurang-kurangnya {{.MinAge}}"
+"user.validationErrors".en = "Create user failed"
+"user.validationErrors".ms = "Buat pengguna gagal"

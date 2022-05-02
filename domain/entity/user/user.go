@@ -40,6 +40,7 @@ var (
 			SetParams(InvalidAgeParams{MaxAge: MaxAge})
 	ErrUnderAge = errors.Partial[UnderAgeParams](eb.Code("user.underAge")).
 			SetParams(UnderAgeParams{MinAge: MinAge})
+	ErrValidationErrors = errors.Partial[ValidationErrors](eb.Code("user.validationErrors"))
 )
 
 type InvalidAgeParams struct {
@@ -52,4 +53,11 @@ type UnderAgeParams struct {
 
 type InvalidNameParams struct {
 	Name string `json:"name"`
+}
+
+type ValidationErrors []ValidationFieldError
+
+type ValidationFieldError struct {
+	Field  string `json:"field"`
+	Reason string `json:"reason"`
 }

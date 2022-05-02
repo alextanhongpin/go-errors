@@ -47,12 +47,12 @@ func (b *Bundle) Load(errorBytes []byte, fn unmarshallFn) error {
 
 	for kind, translationsByCode := range data {
 		if !b.kinds[kind] {
-			return fmt.Errorf("invalid kind: %s", kind)
+			return fmt.Errorf("%w: %s", ErrInvalidKind, kind)
 		}
 
 		for code, messageByLanguage := range translationsByCode {
 			if _, ok := b.errorByCode[code]; ok {
-				return fmt.Errorf("error code exists: %s", code)
+				return fmt.Errorf("%w: %s", ErrDuplicateCode, code)
 			}
 
 			translations := make(map[language.Tag]string)
@@ -62,7 +62,7 @@ func (b *Bundle) Load(errorBytes []byte, fn unmarshallFn) error {
 
 			for lang := range b.langs {
 				if _, ok := translations[lang]; !ok {
-					return fmt.Errorf("%q.%q is not defined", code, lang)
+					return fmt.Errorf("%w: %q.%q", ErrTranslationUndefined, code, lang)
 				}
 			}
 
@@ -70,6 +70,7 @@ func (b *Bundle) Load(errorBytes []byte, fn unmarshallFn) error {
 				Code:         string(code),
 				Kind:         string(kind),
 				Message:      translations[b.defaultLang],
+				Params:       nil,
 				lang:         b.defaultLang,
 				translations: translations,
 			}
@@ -83,13 +84,14 @@ func (b *Bundle) MustLoad(errorBytes []byte, fn unmarshallFn) bool {
 	if err := b.Load(errorBytes, fn); err != nil {
 		panic(err)
 	}
+
 	return true
 }
 
 func (b *Bundle) Code(code Code) *Error {
 	err, ok := b.errorByCode[code]
 	if !ok {
-		panic(fmt.Errorf("error code not found: %s", code))
+		panic(fmt.Errorf("%w: %s", ErrCodeNotFound, code))
 	}
 
 	return err.Clone()

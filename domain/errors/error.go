@@ -12,6 +12,7 @@ type Error struct {
 	Kind         string `json:"kind"`
 	Code         string `json:"code"`
 	Message      string `json:"message"`
+	Params       any    `json:"params"`
 	lang         language.Tag
 	translations map[language.Tag]string
 }
@@ -21,7 +22,7 @@ func (e *Error) SetLanguage(lang language.Tag) *Error {
 
 	msg, ok := err.translations[lang]
 	if !ok {
-		panic(fmt.Errorf("%q.%q is not defined", err.Code, lang))
+		panic(fmt.Errorf("%w: %q.%q", ErrTranslationUndefined, err.Code, lang))
 	}
 
 	err.lang = lang
@@ -48,6 +49,7 @@ func (e Error) Is(target error) bool {
 func (e *Error) Clone() *Error {
 	cerr := *e
 	cerr.translations = make(map[language.Tag]string)
+
 	for k, v := range e.translations {
 		cerr.translations[k] = v
 	}
