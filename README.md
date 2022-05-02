@@ -34,11 +34,15 @@ There are several benefits to this approach:
 
 ## How to implement it
 
-1. Define your error kinds 
+1. Define your error kinds
 2. Define your error codes in the errors.toml
 3. Import and init the errors
 4. Call them
 5. Map your errors to http error codes
+
+## Which format to store errors (toml, json, or yaml?)
+
+Personally TOML is the best, even though there's repetition of keys. They are easier to diff too line by line so you know which translations is missing, unlike nested json/yaml.
 
 
 https://engineering.zalando.com/posts/2021/04/modeling-errors-in-graphql.html
