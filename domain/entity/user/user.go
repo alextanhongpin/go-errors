@@ -43,14 +43,12 @@ const (
 )
 
 var (
-	_              = eb.MustLoad(errorCodes)
-	ErrNotFound    = eb.Code("user.notFound")
-	ErrInvalidName = errors.Partial[InvalidNameParams](eb.Code("user.invalidName"))
-	ErrInvalidAge  = errors.Partial[InvalidAgeParams](eb.Code("user.invalidAge")).
-			SetParams(InvalidAgeParams{MaxAge: MaxAge})
-	ErrUnderAge = errors.Partial[UnderAgeParams](eb.Code("user.underAge")).
-			SetParams(UnderAgeParams{MinAge: MinAge})
-	ErrValidationErrors = errors.Partial[ValidationErrors](eb.Code("user.validationErrors"))
+	_                   = eb.MustLoad(errorCodes)
+	ErrNotFound         = eb.Code("user.notFound")                                           // For text-only errors without params.
+	ErrInvalidAge       = errors.Build(eb.Code("user.invalidAge"), InvalidAgeParams{MaxAge}) // For errors with constant params.
+	ErrUnderAge         = errors.Build(eb.Code("user.underAge"), UnderAgeParams{MinAge})     //
+	ErrInvalidName      = errors.Partial[InvalidNameParams](eb.Code("user.invalidName"))     // For errors with dynamic params.
+	ErrValidationErrors = errors.Partial[ValidationErrors](eb.Code("user.validationErrors")) //
 )
 
 type InvalidAgeParams struct {

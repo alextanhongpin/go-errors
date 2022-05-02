@@ -15,6 +15,10 @@ func Partial[T any](err *Error) PartialError[T] {
 	return NewErrorParams[T](err)
 }
 
+func Build[T any](err *Error, params T) *Error {
+	return NewErrorParams[T](err).SetParams(params)
+}
+
 type ErrorParams[T any] struct {
 	err *Error
 }
