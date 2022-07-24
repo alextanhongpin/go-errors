@@ -46,3 +46,13 @@ Personally TOML is the best, even though there's repetition of keys. They are ea
 
 
 https://engineering.zalando.com/posts/2021/04/modeling-errors-in-graphql.html
+
+# Thoughts
+
+- separate domain errors from usecase errors, e.g createUser.passwordTooShort, password too short is from value object. This provides a *hint from where the error originates*
+- separate store errors from usecase errors. E.g user not found etc. Errors from repository should be handled
+- catch all errors should be unknown, and not internal server error. all unknown errors needs to be handled.
+
+
+
+
