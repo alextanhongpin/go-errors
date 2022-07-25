@@ -54,6 +54,6 @@ https://engineering.zalando.com/posts/2021/04/modeling-errors-in-graphql.html
 - separate store errors from usecase errors. E.g user not found etc. Errors from repository should be handled
 - catch all errors should be unknown, and not internal server error. all unknown errors needs to be handled.
 - errors should be handled layer by layer. That is, we should not just propagate the erroe without khandling them. So errors in the repository layer should be handled in the usecase for clarity.
-
+- another idea is to add tagging capability to errors, so that two similar error are treated distinctly. For example, user.emailExists can be returned in the usecase create user or update email. We can add the tag createUser and updateUserEmail so that both points to the same error, but is distinct. So errors can be declared as ErrCreateUserEmailExists and ErrUpdateUserEmailExists respectively.
 
 
