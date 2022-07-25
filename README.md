@@ -50,9 +50,10 @@ https://engineering.zalando.com/posts/2021/04/modeling-errors-in-graphql.html
 # Thoughts
 
 - separate domain errors from usecase errors, e.g createUser.passwordTooShort, password too short is from value object. This provides a *hint from where the error originates*
+- will it lead to repetition? The same error may appear in two different usecase, albeit with the same message. But tying usecase to error does add a lot of clarity. One disadvantage is when the usecase changes.
 - separate store errors from usecase errors. E.g user not found etc. Errors from repository should be handled
 - catch all errors should be unknown, and not internal server error. all unknown errors needs to be handled.
-
+- errors should be handled layer by layer. That is, we should not just propagate the erroe without khandling them. So errors in the repository layer should be handled in the usecase for clarity.
 
 
 
