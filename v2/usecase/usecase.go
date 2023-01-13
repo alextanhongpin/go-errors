@@ -21,12 +21,12 @@ var (
 )
 
 func UserNotFoundError(name string) error {
-	type userNotFoundErrorParams struct {
+	type params struct {
 		Name string
 	}
 
-	return errors.ToPartial[userNotFoundErrorParams](ErrUserNotFound).
-		WithParams(userNotFoundErrorParams{
+	return errors.ToPartial[params](ErrUserNotFound).
+		WithParams(params{
 			Name: name,
 		})
 }
