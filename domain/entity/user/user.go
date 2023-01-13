@@ -8,9 +8,10 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-//go:embed errors.json
 // go:embed errors.toml
 // go:embed errors.yaml
+//
+//go:embed errors.json
 var errorCodes []byte
 
 var (

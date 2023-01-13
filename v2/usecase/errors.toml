@@ -1,0 +1,5 @@
+[not_found]
+"user.not_found" = "The user {{.Name}} does not exists or has been deleted"
+
+[unknown]
+"user.unknown" = "Unknown error"
