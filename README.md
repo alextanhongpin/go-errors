@@ -76,7 +76,11 @@ usecase
 - validation errors should not be part of this (required fields etc)
 - multi errors is still a pain 
 
-
+api
+- api should map the domain errors to rest http errors
+- api layer is also responsible for sending the errors to error management such as sentry
+- api layer should also log the errors
+- api layer can include additional metadatas such as url path and request id of the errors
 
 
 # Thoughts
