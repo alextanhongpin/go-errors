@@ -58,23 +58,24 @@ Repository
 - for find one, map errors to not found
 - for update and delete, optionally return the not found if no entries were updated or deleted
 - for insert, return errors regarding constraints, such as uniqueness etc.
-- the errors should be handled by the caller and converted to custom errors accordingly 
+- the errors should be handled by the caller and converted to custom errors accordingly
 - on second thought, we can just return custom errors so that any caller dont have to map the errors. repository is a part of domain after all.
 - all errors not converted to custom errors will become internal server error
 - storage is for table specific, repository is domain specific. storage error is generic, hence return sentinel error. repository error is specific, hence domain errors.
 
 usecase
 - the end goal is to return clear errors per usecase
-- domain errors are generic, e.g. UserExistsError could be used by different usecase. However, we might want to mark this error under CreateUserError.UserExists for the usecase CreateUser. This makes the CreateUser usecase explicit, since we can return User|CreateUserError 
-- for find one, there is not found error, by condition 
+- domain errors are generic, e.g. UserExistsError could be used by different usecase. However, we might want to mark this error under CreateUserError.UserExists for the usecase CreateUser. This makes the CreateUser usecase explicit, since we can return User|CreateUserError
+- for find one, there is not found error, by condition
 - for create, there can be constraints during creation
 - for update or delete, we coukd return not found error
 - all is subject to business logic error, e.g. can create/update/delete/read
-- ~we can skip repo errors since they are handled.~ actually usecase should handle the conversion. the top layers should always handle thr lower layer errors. This is mainly because go is bad at extending errors, until the errors.Join is merged into 1.20. 
+- ~we can skip repo errors since they are handled.~ actually usecase should handle the conversion. the top layers should always handle thr lower layer errors. This is mainly because go is bad at extending errors, until the errors.Join is merged into 1.20.
 - services should return boolean, then usecase can decide which errors to return
-- if the service must return error, then the errors must be wrapped. It is preferable if thr service returns only one error, or also another error object 
+- if the service must return error, then the errors must be wrapped. It is preferable if thr service returns only one error, or also another error object
 - validation errors should not be part of this (required fields etc)
-- multi errors is still a pain 
+- multi errors is still a pain
+- usecase should only return ONE specific errors, and no validation errors
 
 api
 - api should map the domain errors to rest http errors
