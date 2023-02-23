@@ -62,6 +62,35 @@ Repository
 - on second thought, we can just return custom errors so that any caller dont have to map the errors. repository is a part of domain after all.
 - all errors not converted to custom errors will become internal server error
 - storage is for table specific, repository is domain specific. storage error is generic, hence return sentinel error. repository error is specific, hence domain errors.
+- repository error should only have one single sentinel error.
+
+
+Example of error handling in repository layer:
+
+```go
+// user_repository.go
+
+// Alias so that we don't need to create new type.
+var ErrNotFound = sql.ErrNoRows
+
+var ErrDuplicateEmail = errors.New("user_repository: duplicate email")
+
+func (r *Repository) CreateUser(ctx context.Context, email string) (*User, error) {
+	u, err := r.db.Insert(ctx, email)
+	if err != nil {
+		// MatchConstraint is a custom method to cast the error back to the
+		// respective driver error and checking the constraint errors.
+		if MatchConstraint(err, "users_unique_email") {
+			return nil, ErrDuplicateEmail
+		}
+
+		// Return raw error - this will be converted to internal server error later.
+		return nil, err
+	}
+
+	return u, nil
+}
+```
 
 usecase
 - the end goal is to return clear errors per usecase
@@ -77,12 +106,72 @@ usecase
 - multi errors is still a pain
 - usecase should only return ONE specific errors, and no validation errors
 
+Example of error handling at usecase layer:
+```go
+// domain/user.go
+var ErrUserNotFound = errors.New("user: not found")
+var ErrUserDuplicateEmail = errors.New("user: email exists")
+
+// usecase/user_usecase.go
+type CreateUserError struct {
+	DuplicateEmail error
+} {
+	DuplicateEmail: domain.ErrUserDuplicateEmail,
+}
+
+func (uc *UserUseCase) CreateUser(ctx context.Context, email string) (*domain.User, error) {
+	u, err := uc.repo.CreateUser(ctx, email)
+	if err != nil {
+		if errors.Is(err, repository.ErrDuplicateEmail) {
+			return nil, CreateUserError.DuplicateEmail
+		}
+
+		// Return raw error. This will be converted to internal server error later
+		return nil, err
+	}
+
+	return u, nil
+}
+```
+
 api
 - api should map the domain errors to rest http errors
 - api layer is also responsible for sending the errors to error management such as sentry
 - api layer should also log the errors
 - api layer can include additional metadatas such as url path and request id of the errors
+- any error that is not part of AppError is converted to internal server error and actual error is logged
 
+
+Example of error handling at api layer:
+
+```go
+func (api *UserAPI) PostCreateUser(w http.ResponseWriter, r *http.Request) {
+	// not shown ...
+	u, err := api.usecase.CreateUser(ctx, email)
+	if err != nil {
+		JSONError(w, r, err)
+		return
+	}
+}
+
+func JSONError(w http.ResponseWriter, r *http.Request, err error) {
+	var appError *AppError
+	if !errors.As(err, &appError) {
+		// Log the original error for debugging...
+		log.Error(err)
+
+		// Defaults to internal server error.
+		appError = InternalServerError()
+	}
+
+	w.WriteStatus(kindToStatusCode(appError.Kind))
+	if err := json.NewEncoder(w).Encode(appError); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	return
+}
+```
 
 # Thoughts
 
